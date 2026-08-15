@@ -1,15 +1,19 @@
 package com.deshkar.service.impl;
 
 import com.deshkar.dto.ProductRequest;
+import com.deshkar.dto.ProductResponse;
 import com.deshkar.model.Products;
 import com.deshkar.repo.ProductRepo;
 import com.deshkar.service.ProductService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -20,8 +24,8 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepo productRepo;
 
     @Override
-    public List<Products> getActiveProducts() {
-        return productRepo.findByIsActive(true);
+    public List<ProductResponse> getActiveProducts() {
+        return createProductResponse(productRepo.findByIsActive(true));
     }
 
     @Override
@@ -36,7 +40,8 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public void addAll(List<Products> products) {
+    public void addAll(List<ProductRequest> requests) {
+        List<Products> products = createProductModelList(requests);
         productRepo.saveAll(products);
     }
 
@@ -62,7 +67,40 @@ public class ProductServiceImpl implements ProductService {
         Products product = new Products();
         product.setProductName(request.getProductName());
         product.setPrice(request.getPrice());
-
+        product.setIsActive(true);
+        product.setDte_created(LocalDateTime.now());
+        product.setDte_updated(LocalDateTime.now());
+        product.setUpdatedBy(getCurrentUser());
         return product;
+    }
+
+    private List<Products> createProductModelList(List<ProductRequest> requests){
+        List<Products> products = new ArrayList<>();
+        for(ProductRequest request: requests){
+            Products product = createProductModel(request);
+            products.add(product);
+        }
+        return products;
+    }
+
+    private String getCurrentUser(){
+        return SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
+    }
+
+    private List<ProductResponse> createProductResponse(List<Products> products){
+        List<ProductResponse> response = new ArrayList<>();
+        for(Products product: products){
+            ProductResponse res = new ProductResponse();
+            res.setProductId(product.getProductId());
+            res.setProductName(product.getProductName());
+            res.setPrice(product.getPrice());
+            res.setIsActive(product.getIsActive());
+            res.setUpdatedBy(product.getUpdatedBy());
+            response.add(res);
+        }
+        return response;
     }
 }

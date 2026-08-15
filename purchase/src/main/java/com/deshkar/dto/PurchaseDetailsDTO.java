@@ -27,7 +27,7 @@ public class PurchaseDetailsDTO {
     private Double advancePaid;
     private Double balance;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy HH:mm:ss")
-    private LocalDateTime createdDate = LocalDateTime.now(ZoneId.of("Asia/Kolkata"));
+    private LocalDateTime createdDate;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy HH:mm:ss")
     private LocalDateTime updatedDate;
     private String updatedBy;

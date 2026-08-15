@@ -1,5 +1,6 @@
 package com.deshkar.service.impl;
 
+import com.deshkar.exceptions.ResourceNotFoundException;
 import com.deshkar.model.Sales;
 import com.deshkar.model.Invoice;
 import com.deshkar.repo.SalesRepo;
@@ -27,7 +28,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     public Invoice generateInvoice(Long purchaseId) throws Exception {
 
         Sales p = purchaseRepo.findById(purchaseId)
-                .orElseThrow(() -> new RuntimeException("Purchase not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Purchase not found"));
 
         Optional<Invoice> existingOpt = invoiceRepo.findByPurchaseId(purchaseId);
 
@@ -82,7 +83,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     public byte[] downloadInvoice(Long purchaseId) throws Exception {
 
         Sales p = purchaseRepo.findById(purchaseId)
-                .orElseThrow(() -> new RuntimeException("Purchase not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Purchase not found"));
 
         Invoice inv = invoiceRepo.findByPurchaseId(purchaseId)
                 .orElseGet(() -> {

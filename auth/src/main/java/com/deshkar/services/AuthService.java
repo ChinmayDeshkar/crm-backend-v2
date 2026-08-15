@@ -6,11 +6,12 @@ import com.deshkar.dto.SignUpRequest;
 import com.deshkar.model.Users;
 import org.springframework.http.ResponseEntity;
 
+import javax.security.auth.login.LoginException;
 import java.util.Map;
 
 public interface AuthService {
 
-    ResponseEntity<?> login(LoginRequest req);
+    ResponseEntity<?> login(LoginRequest req) throws LoginException;
 
     ResponseEntity<?> signup(SignUpRequest user);
 

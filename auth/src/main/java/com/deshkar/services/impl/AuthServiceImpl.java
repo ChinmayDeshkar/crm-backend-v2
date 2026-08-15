@@ -6,6 +6,9 @@ import com.deshkar.code.service.CodeService;
 import com.deshkar.dto.LoginRequest;
 import com.deshkar.dto.ResetPassword;
 import com.deshkar.dto.SignUpRequest;
+import com.deshkar.exceptions.DuplicateRecordException;
+import com.deshkar.exceptions.LoginException;
+import com.deshkar.exceptions.ResourceNotFoundException;
 import com.deshkar.model.Role;
 import com.deshkar.model.Users;
 import com.deshkar.repo.UserRepo;
@@ -38,15 +41,10 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public ResponseEntity<?> login(LoginRequest req) {
         Users user = userRepo.findByUsername(req.username())
-                .orElse(null);
-
-        if(user == null)
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("Error", "UserNotFound",
-                                                                                "Message", "User not found with username " + req.username()));
+                .orElseThrow(() -> new LoginException("User not found with username: " + req.username()));
 
         if(!user.getIsActive())
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("Error", "User is inactive",
-                    "Message", "User is inactive " + req.username()));
+            throw new LoginException("User is inactive, contact admin");
 
         if(encoder.matches(req.password(), user.getPassword())){
 
@@ -78,14 +76,14 @@ public class AuthServiceImpl implements AuthService {
         Users user = createUserEntity(signUpRequest);
         // Check if username presents
         if(userRepo.existsByUsername(user.getUsername()))
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("Message: ", "User already present"));
+            throw new DuplicateRecordException("Username is already exists");
 
         // Check if phone number present
         if(userRepo.existsByPhone(user.getPhone()))
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("Message: ", "Phone number already present"));
+            throw new DuplicateRecordException("Phone number is already exists");
 
         if (userRepo.existsByEmail(user.getEmail()))
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("Message: ", "Email id already present"));
+            throw new DuplicateRecordException("Email id is already exists");
 
         String newPassword = passwordGenerator.generatePassword(8);
         Code code = codeService.getCode(Role.EMPLOYEE, CodeType.ROLE);
@@ -109,10 +107,10 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public ResponseEntity<?> firstLogin(ResetPassword req){
         var u = userRepo.findByUsername(req.getUsername());
-        if(u.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("Message","User not found"));
+        if(u.isEmpty()) throw new LoginException("User not found: " + req.getUsername());
         Users user = u.get();
         if(!encoder.matches(req.getOldPassword(), user.getPassword()))
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("Message","Incorrect old password"));
+            throw new LoginException("Username/password is incorrect, please reset password if forgot");
         user.setPassword(encoder.encode(req.getNewPassword()));
         user.setFirstLogin(false);
         userRepo.save(user);
@@ -133,11 +131,11 @@ public class AuthServiceImpl implements AuthService {
         String otp = req.get("otp");
 
         if (!otpService.verifyOtp(username, otp)) {
-            return ResponseEntity.badRequest().body(Map.of("Message", "Invalid OTP"));
+            throw new LoginException("Invalid OTP");
         }
 
         Users user = userRepo.findByUsername(username).orElse(null);
-        if (user == null) return ResponseEntity.status(404).body(Map.of("Message", "User not found"));
+        if (user == null) throw new LoginException("User not found: " + username);
 
         // Generate JWT (same as before)
         String authToken = jwtUtil.generateToken(username, codeService.getCode(user.getRole()).getCode());
