@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Deshkar CRM</title>
+  <link rel="stylesheet" href="/css/crm.css">
+</head>
+<body>
+<div id="app">
+  <aside class="sidebar">
+    <div class="brand"><b>Deshkar</b><small>CRM Suite · Thymeleaf</small></div>
+    <nav>
+      <a href="/dashboard">Dashboard</a><a href="/customers">Customers</a><a href="/products">Products</a>
+      <a href="/purchases">Purchases</a><a href="/invoices">Invoices</a><a href="/payments">Payments</a>
+      <a href="/reports">Reports</a><a href="/profile">Profile</a><a id="adminLink" href="/admin">Admin</a>
+    </nav>
+    <button id="logout" class="secondary">Logout</button>
+  </aside>
+  <main class="content">
+    <div id="loginView" class="login-card">
+      <h1>Deshkar CRM</h1><p>JWT login + OTP flow from the supplied backend.</p>
+      <form id="loginForm"><label>Username<input id="username" required></label><label>Password<input id="password" type="password" required></label><button>Continue</button></form>
+      <form id="otpForm" hidden><label>OTP<input id="otp" maxlength="6" required></label><button>Verify OTP</button></form>
+      <form id="resetForm" hidden><label>Username<input id="resetUsername" required></label><label>Old password<input id="oldPassword" type="password" required></label><label>New password<input id="newPassword" type="password" required></label><button>Reset password</button></form>
+      <p id="message"></p>
+    </div>
+
+    <div id="pageView" hidden>
+      <div class="page-head"><div><h1 id="title">Dashboard</h1><p id="subtitle">CRM overview</p></div></div>
+      <section id="dashboardPage" class="page"></section>
+      <section id="customersPage" class="page" hidden></section>
+      <section id="productsPage" class="page" hidden></section>
+      <section id="purchasesPage" class="page" hidden></section>
+      <section id="invoicesPage" class="page" hidden></section>
+      <section id="paymentsPage" class="page" hidden></section>
+      <section id="reportsPage" class="page" hidden></section>
+      <section id="profilePage" class="page" hidden></section>
+      <section id="adminPage" class="page" hidden></section>
+    </div>
+  </main>
+</div>
+<script src="/js/crm.js"></script>
+</body>
+</html>

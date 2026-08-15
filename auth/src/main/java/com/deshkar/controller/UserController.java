@@ -1,0 +1,53 @@
+package com.deshkar.controller;
+
+import com.deshkar.model.Users;
+import com.deshkar.repo.UserRepo;
+import com.deshkar.security.JwtUtil;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
+
+@Slf4j
+@RestController
+@RequestMapping("/api/user")
+@RequiredArgsConstructor
+public class UserController {
+
+    private final UserRepo userRepo;
+    private final JwtUtil jwtUtil;
+
+    @GetMapping("/profile")
+    public ResponseEntity<?> getProfile(HttpServletRequest request) {
+        String token = extractToken(request);
+        String username = jwtUtil.getUsernameFromToken(token);
+        Users user = userRepo.findByUsername(username).orElseThrow(() -> new RuntimeException("Error while collecting profile details"));
+
+        return ResponseEntity.status(HttpStatus.OK).body(Map.of("User",user));
+    }
+
+    @PutMapping("/profile")
+    public ResponseEntity<?> updateProfile(HttpServletRequest request, @RequestBody Map<String, String> body) {
+        String token = extractToken(request);
+        String username = jwtUtil.getUsernameFromToken(token);
+
+        return userRepo.findByUsername(username)
+                .map(user -> {
+                    if (body.containsKey("email")) user.setEmail(body.get("email"));
+                    if (body.containsKey("phone")) user.setPhone(body.get("phone"));
+                    userRepo.save(user);
+                    return ResponseEntity.ok(Map.of("message", "Profile updated successfully"));
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    private String extractToken(HttpServletRequest request) {
+        String header = request.getHeader("Authorization");
+        return (header != null && header.startsWith("Bearer ")) ? header.substring(7) : null;
+    }
+
+}
