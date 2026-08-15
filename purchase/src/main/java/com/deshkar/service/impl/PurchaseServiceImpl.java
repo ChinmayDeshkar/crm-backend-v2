@@ -3,6 +3,7 @@ package com.deshkar.service.impl;
 import com.deshkar.dto.PurchaseDetailsDTO;
 import com.deshkar.dto.PurchaseUpdateRequest;
 import com.deshkar.dto.TaskDTO;
+import com.deshkar.exceptions.ResourceNotFoundException;
 import com.deshkar.model.*;
 import com.deshkar.repo.SalesRepo;
 import com.deshkar.repo.CustomerRepo;
@@ -114,7 +115,7 @@ public class PurchaseServiceImpl implements PurchaseService {
 
         log.debug("Getting Purchase details for id = " + id);
         Sales purchase = purchaseRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Error while getting purchase with id, " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Error while getting purchase with id, " + id));
 
         PurchaseDetailsDTO purchaseDetailsDTO = new PurchaseDetailsDTO(
                 purchase.getId(),
@@ -139,6 +140,9 @@ public class PurchaseServiceImpl implements PurchaseService {
     public List<TaskDTO> getPurchaseByCustId(long id) {
 
         List<Sales> purchases = purchaseRepo.findByCustomerId(id);
+        if(purchases.isEmpty())
+            throw new ResourceNotFoundException("No purchase with customer id: "+ id);
+
         List<TaskDTO> tasks = new ArrayList<>(List.of());
         for(Sales purchase: purchases){
             TaskDTO task = new TaskDTO();
@@ -159,7 +163,11 @@ public class PurchaseServiceImpl implements PurchaseService {
 
     @Override
     public List<TaskDTO> getPurchaseByCustName(String name) {
+        log.info("Customer name: " + name);
         List<Sales> purchases = purchaseRepo.findByCustomerName(name);
+        if(purchases.isEmpty())
+            throw new ResourceNotFoundException("No purchase with customer name: "+ name);
+
         List<TaskDTO> tasks = new ArrayList<>(List.of());
         for(Sales purchase: purchases){
             TaskDTO task = new TaskDTO();
@@ -180,9 +188,8 @@ public class PurchaseServiceImpl implements PurchaseService {
 
     @Override
     public List<TaskDTO> getPurchaseByPhoneNumber(String phoneNumber) {
-        Customer customer = customerRepo.findByPhoneNumber(phoneNumber).orElseThrow(() -> new RuntimeException("Purchase not found with phone number " + phoneNumber));
-        List<TaskDTO> tasks = getPurchaseByCustId(customer.getId());
-        return tasks;
+        Customer customer = customerRepo.findByPhoneNumber(phoneNumber).orElseThrow(() -> new ResourceNotFoundException("Purchase not found with phone number " + phoneNumber));
+        return getPurchaseByCustId(customer.getId());
     }
 
     private List<TaskDTO> mapToDTO(List<Sales> purchases) {

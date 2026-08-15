@@ -1,6 +1,7 @@
 package com.deshkar.controller;
 
 import com.deshkar.dto.ProductRequest;
+import com.deshkar.dto.ProductResponse;
 import com.deshkar.model.Products;
 import com.deshkar.service.ProductService;
 import lombok.AllArgsConstructor;
@@ -20,7 +21,7 @@ public class ProductController {
     private final ProductService productService;
 
     @GetMapping("/all")
-    public List<Products> getAll(){
+    public List<ProductResponse> getAll(){
         return productService.getActiveProducts();
     }
 
@@ -31,9 +32,9 @@ public class ProductController {
     }
 
     @PostMapping("/add-all")
-    public Products addAll(@RequestBody List<Products> products){
+    public Products addAll(@RequestBody List<ProductRequest> requests){
 //        log.info(product.toString());
-         productService.addAll(products);
+         productService.addAll(requests);
          return null;
     }
 

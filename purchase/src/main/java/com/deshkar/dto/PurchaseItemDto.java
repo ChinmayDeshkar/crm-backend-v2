@@ -9,8 +9,6 @@ import lombok.Setter;
 @Setter
 public class PurchaseItemDto {
 
-    private Long itemId;
-    private Sales purchase;
     private Products product;
     private int quantity;
     private Double itemPrice;

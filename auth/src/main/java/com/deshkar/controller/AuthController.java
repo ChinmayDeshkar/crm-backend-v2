@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.security.auth.login.LoginException;
 import java.util.Map;
 
 @Slf4j
@@ -24,7 +25,7 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/login")
-    public  ResponseEntity<?> login(@RequestBody LoginRequest req){
+    public  ResponseEntity<?> login(@RequestBody LoginRequest req) throws LoginException {
         return authService.login(req);
     }
 
