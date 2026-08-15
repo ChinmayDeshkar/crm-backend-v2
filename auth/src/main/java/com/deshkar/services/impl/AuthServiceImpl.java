@@ -46,7 +46,9 @@ public class AuthServiceImpl implements AuthService {
         if(!user.getIsActive())
             throw new LoginException("User is inactive, contact admin");
 
-        if(encoder.matches(req.password(), user.getPassword())){
+        if(!encoder.matches(req.password(), user.getPassword())) {
+            throw new LoginException("username/password is incorrect. Please contact admin to reset password.");
+        }
 
             String authToken = jwtUtil.generateToken(req.username(), codeService.getCode(user.getRole()).getCode());
             if (user.getFirstLogin()) return ResponseEntity.status(HttpStatus.OK).body(Map.of("Message", "First Login detected, Please reset Password"));
@@ -61,14 +63,6 @@ public class AuthServiceImpl implements AuthService {
                     "username", user.getUsername(),
                     "otp", otp
                     ));
-//            return ResponseEntity.status(HttpStatus.OK).body(Map.of("Message", "User logged in successfully",
-//                                                                        "AuthToken", authToken,
-//                                                                        "Role", user.getRole(),
-//                                                                        "Username", user.getUsername()));
-        }
-
-
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("Error", "Error while logging in"));
     }
 
     @Override
