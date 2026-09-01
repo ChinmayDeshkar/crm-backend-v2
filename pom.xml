@@ -22,6 +22,7 @@
     <module>purchase</module>
     <module>reporting</module>
     <module>common</module>
+    <module>crm-application</module>
   </modules>
 
   <properties>
